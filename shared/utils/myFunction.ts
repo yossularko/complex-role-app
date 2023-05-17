@@ -1,5 +1,6 @@
 import { Buffer } from "buffer";
 import CryptoJS from "crypto-js";
+import { AccessMenu } from "../types/login";
 
 const secretKey = process.env.app_secret as string;
 
@@ -87,6 +88,30 @@ const downloadFile = (data: Blob, filename: string) => {
   a.remove(); //afterwards we remove the element again
 };
 
+const createMenuSingle = (treeData: AccessMenu[]): AccessMenu[] => {
+  return treeData.reduce<AccessMenu[]>((acc, curr) => {
+    const { children, ...rest } = curr;
+    if (children) {
+      const next = createMenuSingle(children);
+      acc.push(rest, ...next);
+    } else {
+      acc.push(rest);
+    }
+
+    return acc;
+  }, []);
+};
+
+const getMenuAction = (pathname: string, treeData: AccessMenu[]) => {
+  const menuList = createMenuSingle(treeData);
+  const splited = pathname.split("/");
+  const currentSlug = splited[splited.length - 1];
+  const idx = menuList.findIndex((val) => val.slug === currentSlug);
+  const currentMenu = menuList[idx];
+
+  return { slug: currentMenu.slug, actions: currentMenu.actions };
+};
+
 export {
   encodeBase64,
   decodeBase64,
@@ -95,4 +120,5 @@ export {
   encryptJson,
   decryptJson,
   downloadFile,
+  getMenuAction,
 };
