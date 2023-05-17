@@ -1,4 +1,5 @@
 "use client";
+import { message } from "antd";
 import React, {
   createContext,
   useCallback,
@@ -6,6 +7,7 @@ import React, {
   useReducer,
 } from "react";
 import { AccessMenu, Token, User } from "../types/login";
+import { refreshToken } from "../utils/fetchApi";
 import { decryptJson, encryptJson } from "../utils/myFunction";
 
 enum ActionKind {
@@ -56,7 +58,8 @@ interface State {
   userMenu: AccessMenu[];
   refreshToken: (token: string) => void;
   signIn: ({ token, user, accessMenus }: SignIn) => void;
-  signOut: () => void;
+  signOut: () => Promise<void>;
+  handleRefreshToken: () => Promise<void>;
 }
 
 interface Props {
@@ -85,7 +88,8 @@ const initialState: State = {
   userMenu: [],
   refreshToken: () => {},
   signIn: () => {},
-  signOut: () => {},
+  signOut: async () => {},
+  handleRefreshToken: async () => {},
 };
 
 export const AuthContext = createContext<State>(initialState);
@@ -182,15 +186,33 @@ const AuthProvider = ({ children }: Props): JSX.Element => {
     });
   }, []);
 
-  const signOut = useCallback(() => {
-    localStorage.removeItem(StorageKind.userRefresh);
-    localStorage.removeItem(StorageKind.userData);
-    localStorage.removeItem(StorageKind.userMenu);
+  const signOut = useCallback(async () => {
+    await new Promise<void>((resolve, reject) => {
+      localStorage.removeItem(StorageKind.userRefresh);
+      localStorage.removeItem(StorageKind.userData);
+      localStorage.removeItem(StorageKind.userMenu);
 
-    return dispatch({
-      type: ActionKind.LOGOUT,
+      dispatch({
+        type: ActionKind.LOGOUT,
+      });
+      resolve();
     });
+
+    location.reload();
   }, []);
+
+  const handleRefreshToken = useCallback(async () => {
+    const dataRefresh = {
+      refresh_token: state.userRefresh,
+    };
+    try {
+      await refreshToken(dataRefresh);
+      message.info("Silahkan coba lagi");
+    } catch (error) {
+      message.error("Silahkan login kembali");
+      signOut();
+    }
+  }, [state.userRefresh, signOut]);
 
   return (
     <AuthContext.Provider
@@ -198,6 +220,7 @@ const AuthProvider = ({ children }: Props): JSX.Element => {
         ...state,
         signIn,
         signOut,
+        handleRefreshToken,
       }}
     >
       {children}
