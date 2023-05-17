@@ -1,3 +1,4 @@
+import MainLayout from "@/shared/components/menu/MainLayout";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import React, { PropsWithChildren } from "react";
@@ -9,12 +10,7 @@ const DashboardLayout = ({ children }: PropsWithChildren) => {
   if (!jwt_auth) {
     redirect("/auth/login");
   }
-  return (
-    <div>
-      <p>Dashboard Layout</p>
-      <div>{children}</div>
-    </div>
-  );
+  return <MainLayout>{children}</MainLayout>;
 };
 
 export default DashboardLayout;
