@@ -1,8 +1,8 @@
 // import './globals.css'
 import "antd/dist/reset.css";
 import type { PropsWithChildren } from "react";
-import { RootStyleRegistry } from "../modules/shared/components/root-style-registry";
 import { Inter } from "next/font/google";
+import Providers from "./providers";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -15,7 +15,7 @@ export default function RootLayout({ children }: PropsWithChildren) {
   return (
     <html lang="en">
       <body className={inter.className}>
-        <RootStyleRegistry>{children}</RootStyleRegistry>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

@@ -1,12 +1,8 @@
+import AuthLayout from "@/shared/components/menu/AuthLayout";
 import React, { PropsWithChildren } from "react";
 
-const AuthLayout = ({ children }: PropsWithChildren) => {
-  return (
-    <div>
-      <p>AuthLayout</p>
-      <div>{children}</div>
-    </div>
-  );
+const Layout = ({ children }: PropsWithChildren) => {
+  return <AuthLayout>{children}</AuthLayout>;
 };
 
-export default AuthLayout;
+export default Layout;
