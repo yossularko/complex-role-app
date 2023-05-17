@@ -1,13 +1,14 @@
-"use client";
-import { Button } from "antd";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 // import styles from './page.module.css'
 
 export default function Home() {
-  return (
-    <main>
-      <div>
-        <Button type="primary">Ant Design Button</Button>
-      </div>
-    </main>
-  );
+  const cookieStore = cookies();
+  const jwt_auth = cookieStore.get("jwt_auth");
+
+  if (jwt_auth) {
+    redirect("/dashboard");
+  } else {
+    redirect("/auth/login");
+  }
 }
