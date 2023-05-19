@@ -103,6 +103,18 @@ const createMenuSingle = (treeData: AccessMenu[]): AccessMenu[] => {
 };
 
 const getMenuAction = (pathname: string, treeData: AccessMenu[]) => {
+  if (!pathname || treeData.length === 0) {
+    return {
+      slug: "",
+      actions: {
+        isRead: false,
+        isCreate: false,
+        isUpdate: false,
+        isDelete: false,
+      },
+    };
+  }
+
   const menuList = createMenuSingle(treeData);
   const splited = pathname.split("/");
   const currentSlug = splited[splited.length - 1];
