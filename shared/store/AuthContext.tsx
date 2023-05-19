@@ -208,6 +208,7 @@ const AuthProvider = ({ children }: Props): JSX.Element => {
     try {
       await refreshToken(dataRefresh);
       message.info("Silahkan coba lagi");
+      location.reload();
     } catch (error) {
       message.error("Silahkan login kembali");
       signOut();
