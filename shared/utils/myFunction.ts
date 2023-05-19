@@ -109,7 +109,14 @@ const getMenuAction = (pathname: string, treeData: AccessMenu[]) => {
   const idx = menuList.findIndex((val) => val.slug === currentSlug);
   const currentMenu = menuList[idx];
 
-  return { slug: currentMenu.slug, actions: currentMenu.actions };
+  const actions = {
+    isRead: currentMenu.actions.some((item) => item === "read"),
+    isCreate: currentMenu.actions.some((item) => item === "create"),
+    isUpdate: currentMenu.actions.some((item) => item === "update"),
+    isDelete: currentMenu.actions.some((item) => item === "delete"),
+  };
+
+  return { slug: currentMenu.slug, actions };
 };
 
 export {
