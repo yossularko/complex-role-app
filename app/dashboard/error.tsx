@@ -1,12 +1,19 @@
 "use client"; // Error components must be Client Components
 import { AuthContext } from "@/shared/store/AuthContext";
 import { ErrorResponse } from "@/shared/types/error";
-import { revokeToken } from "@/shared/utils/fetchApi";
+import { refreshToken, revokeToken } from "@/shared/utils/fetchApi";
 import { myError } from "@/shared/utils/myError";
 import { useMutation } from "@tanstack/react-query";
 import { Button, Space, Typography } from "antd";
 import { useRouter } from "next/navigation";
-import { useCallback, useContext, useEffect, useMemo } from "react";
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 const { Title, Paragraph } = Typography;
 
@@ -19,6 +26,7 @@ export default function Error({
 }) {
   const { push } = useRouter();
   const { userRefresh, handleRefreshToken, signOut } = useContext(AuthContext);
+  const [loading, setLoading] = useState(true);
 
   const { mutate, isLoading } = useMutation(revokeToken, {
     onSuccess: (dataSuccess) => {
@@ -28,6 +36,23 @@ export default function Error({
     },
     onError: (err: ErrorResponse) => myError(err, handleRefreshToken),
   });
+
+  const handleRefresh = useRef<() => Promise<void>>(async () => {});
+
+  handleRefresh.current = async () => {
+    setLoading(true);
+    const dataRefresh = {
+      refresh_token: userRefresh,
+    };
+    try {
+      await refreshToken(dataRefresh);
+      location.reload();
+    } catch (error) {
+      console.log(error);
+      setLoading(false);
+      myError(error as ErrorResponse, signOut);
+    }
+  };
 
   const errorData = useMemo(() => {
     if (error.response?.data) {
@@ -55,10 +80,10 @@ export default function Error({
 
   useEffect(() => {
     // Log the error to an error reporting service
-    console.error("error res: ", error);
-  }, [error]);
+    handleRefresh.current();
+  }, []);
 
-  return (
+  return loading ? null : (
     <div
       style={{
         display: "flex",
@@ -72,7 +97,7 @@ export default function Error({
       <Paragraph>{errorData.message}</Paragraph>
       <Space>
         <Button onClick={() => push("/dashboard")}>Dashboard</Button>
-        <Button onClick={() => reset()}>Try again</Button>
+        <Button onClick={() => handleRefresh.current()}>Try again</Button>
         <Button onClick={handleSignOut} loading={isLoading}>
           Logout
         </Button>
