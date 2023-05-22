@@ -48,6 +48,12 @@ export const revokeToken = async (data: RefreshTokenInputs) => {
   return response.data;
 };
 
+// User
+export const getUsers = async (bearer?: string) => {
+  const response = await fetchApi.get("/users", findConfig(bearer));
+  return response.data;
+};
+
 // Menu
 export const getMenus = async (bearer?: string) => {
   const response = await fetchApi.get("/menus", findConfig(bearer));
@@ -76,6 +82,14 @@ export const updateMenu = async ({
 
 export const deleteMenu = async ({ slug }: { slug: string }) => {
   const response = await fetchApi.delete(`/menus/${slug}`, {
+    withCredentials: true,
+  });
+  return response.data;
+};
+
+// Access Menu
+export const getAccessMenu = async (userId: number) => {
+  const response = await fetchApi.get(`/access-menus?userId=${userId}`, {
     withCredentials: true,
   });
   return response.data;

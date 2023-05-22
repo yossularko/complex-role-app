@@ -1,21 +1,18 @@
-"use client";
-import React, { useEffect, useState } from "react";
-import { Button } from "antd";
-import { useSearchParams } from "next/navigation";
+import { cookies } from "next/headers";
+import { getMenus, getUsers } from "@/shared/utils/fetchApi";
+import React from "react";
+import AccessMenuPage from "./AccessMenuPage";
 
-const AccessMenu = () => {
-  const [name, setName] = useState("");
-  const searchParams = useSearchParams();
+export const dynamic = 'force-dynamic'
 
-  useEffect(() => {
-    setName(searchParams.get("name") || "");
-  }, [searchParams]);
-  return (
-    <div>
-      <p>AccessMenu{name}</p>
-      <Button>Test</Button>
-    </div>
-  );
+const AccessMenu = async () => {
+  const jwt_auth = cookies().get("jwt_auth");
+  const initialUser = getUsers(jwt_auth?.value);
+  const initialMenu = getMenus(jwt_auth?.value);
+
+  const [user, menu] = await Promise.all([initialUser, initialMenu])
+
+  return <AccessMenuPage initialUser={user} initialMenu={menu} />;
 };
 
 export default AccessMenu;
