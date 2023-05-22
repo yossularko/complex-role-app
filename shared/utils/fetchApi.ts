@@ -1,6 +1,7 @@
 import axios, { AxiosRequestConfig } from "axios";
 import {
   LoginInputs,
+  MenuInputs,
   RefreshTokenInputs,
   RegisterInputs,
 } from "../types/formValue";
@@ -47,7 +48,35 @@ export const revokeToken = async (data: RefreshTokenInputs) => {
   return response.data;
 };
 
+// Menu
 export const getMenus = async (bearer?: string) => {
   const response = await fetchApi.get("/menus", findConfig(bearer));
+  return response.data;
+};
+
+export const addMenu = async ({ data }: { data: MenuInputs }) => {
+  const response = await fetchApi.post("/menus", data, {
+    withCredentials: true,
+  });
+  return response.data;
+};
+
+export const updateMenu = async ({
+  slug,
+  data,
+}: {
+  slug: string;
+  data: MenuInputs;
+}) => {
+  const response = await fetchApi.patch(`/menus/${slug}`, data, {
+    withCredentials: true,
+  });
+  return response.data;
+};
+
+export const deleteMenu = async ({ slug }: { slug: string }) => {
+  const response = await fetchApi.delete(`/menus/${slug}`, {
+    withCredentials: true,
+  });
   return response.data;
 };

@@ -10,3 +10,9 @@ export interface RegisterInputs extends LoginInputs {
 export interface RefreshTokenInputs {
   refresh_token: string;
 }
+
+export interface MenuInputs {
+  name: string;
+  alias: string;
+  parent?: string[];
+}

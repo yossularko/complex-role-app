@@ -105,7 +105,11 @@ const MainLayout = ({ children }: PropsWithChildren) => {
           style={{ margin: "16px 0" }}
           items={paths.map((val) => ({ title: val }))}
         />
-        <div style={{ background: colorBgContainer }}>{children}</div>
+        <div
+          style={{ background: colorBgContainer, padding: 8, borderRadius: 10 }}
+        >
+          {children}
+        </div>
       </Content>
       <FooterMenu />
     </Layout>

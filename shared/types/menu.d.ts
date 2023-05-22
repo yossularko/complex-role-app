@@ -1,3 +1,5 @@
+import { DataNode } from "antd/es/tree";
+
 export interface Menu {
   id: number;
   slug: string;
@@ -8,3 +10,17 @@ export interface Menu {
   updatedAt: string;
   children?: Menu[];
 }
+
+type MenuProp = {
+  id: number;
+  slug: string;
+  name: string;
+  alias: string;
+  parent: string[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type MenuNodeTree = DataNode & MenuProp;
+
+export type MenuSelect = MenuProp & { isLeaf: boolean };
