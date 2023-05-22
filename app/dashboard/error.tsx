@@ -34,7 +34,7 @@ export default function Error({
 
       signOut();
     },
-    onError: (err: ErrorResponse) => myError(err, () => handleRefreshToken(true)),
+    onError: (err: ErrorResponse) => myError(err, handleRefreshToken),
   });
 
   const handleRefresh = useRef<() => Promise<void>>(async () => {});
@@ -80,8 +80,13 @@ export default function Error({
 
   useEffect(() => {
     // Log the error to an error reporting service
-    handleRefresh.current();
-  }, []);
+    if (
+      String(error).includes("AxiosError") ||
+      String(error).includes("digest")
+    ) {
+      handleRefresh.current();
+    }
+  }, [error]);
 
   return loading ? null : (
     <div
