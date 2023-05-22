@@ -1,5 +1,10 @@
 "use client";
-import React, { PropsWithChildren, useContext, useMemo } from "react";
+import React, {
+  PropsWithChildren,
+  useContext,
+  useLayoutEffect,
+  useMemo,
+} from "react";
 import { Breadcrumb, Layout, Menu, MenuProps, theme, Typography } from "antd";
 import { usePathname, useRouter } from "next/navigation";
 import FooterMenu from "./FooterMenu";
@@ -12,7 +17,7 @@ const { Header, Content } = Layout;
 const { Text } = Typography;
 
 const MainLayout = ({ children }: PropsWithChildren) => {
-  const { userMenu } = useContext(AuthContext);
+  const { isLoading, userMenu, setMenuAction } = useContext(AuthContext);
   const { push } = useRouter();
   const pathname = usePathname();
   const {
@@ -50,7 +55,7 @@ const MainLayout = ({ children }: PropsWithChildren) => {
       parent: [],
       createdAt: "",
       updatedAt: "",
-      actions: [],
+      actions: ["create", "read", "update", "delete"],
     };
 
     return recursiveMenu([menuDashboard, ...userMenu]);
@@ -59,6 +64,13 @@ const MainLayout = ({ children }: PropsWithChildren) => {
   const onClick: MenuProps["onClick"] = (e) => {
     push(`/dashboard${e.key}`);
   };
+
+  useLayoutEffect(() => {
+    if (!isLoading) {
+      setMenuAction(pathname);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading, pathname]);
 
   return (
     <Layout style={{ minHeight: "100vh" }}>

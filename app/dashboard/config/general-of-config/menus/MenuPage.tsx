@@ -8,8 +8,6 @@ import { myError } from "@/shared/utils/myError";
 import { AuthContext } from "@/shared/store/AuthContext";
 import { Button, Tree } from "antd";
 import type { DataNode, DirectoryTreeProps } from "antd/es/tree";
-import { usePathname } from "next/navigation";
-import { getMenuAction } from "@/shared/utils/myFunction";
 
 interface Props {
   initialData: Menu[];
@@ -28,8 +26,7 @@ type NewDataNode = DataNode & {
 const { DirectoryTree } = Tree;
 
 const MenuPage = ({ initialData }: Props) => {
-  const pathname = usePathname();
-  const { handleRefreshToken, userMenu } = useContext(AuthContext);
+  const { handleRefreshToken } = useContext(AuthContext);
   const { data, isLoading, isError, error, refetch } = useQuery<
     Menu[],
     ErrorResponse
@@ -72,9 +69,6 @@ const MenuPage = ({ initialData }: Props) => {
   const onExpand: DirectoryTreeProps["onExpand"] = (keys, info) => {
     console.log("Trigger Expand", keys, info);
   };
-
-  const menuAction = getMenuAction(pathname, userMenu);
-  console.log(menuAction);
 
   if (isError) {
     myError(error, handleRefreshToken);

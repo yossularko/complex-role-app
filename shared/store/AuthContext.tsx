@@ -6,14 +6,16 @@ import React, {
   useEffect,
   useReducer,
 } from "react";
+import { MenuAction } from "../types";
 import { AccessMenu, Token, User } from "../types/login";
 import { refreshToken } from "../utils/fetchApi";
-import { decryptJson, encryptJson } from "../utils/myFunction";
+import { decryptJson, encryptJson, getMenuAction } from "../utils/myFunction";
 
 enum ActionKind {
   RETRIEVE_DATA = "RETRIEVE_DATA",
   LOGIN = "LOGIN",
   LOGOUT = "LOGOUT",
+  SET_MENU_ACTION = "SET_MENU_ACTION",
 }
 
 enum StorageKind {
@@ -49,6 +51,11 @@ type ACTIONTYPE =
       userRefresh?: string;
       userData?: User;
       userMenu?: AccessMenu[];
+    }
+  | {
+      type: ActionKind.SET_MENU_ACTION;
+      isLoading?: boolean;
+      menuAction: MenuAction;
     };
 
 interface State {
@@ -56,10 +63,12 @@ interface State {
   userRefresh: string;
   userData: User;
   userMenu: AccessMenu[];
+  menuAction: MenuAction;
   refreshToken: (token: string) => void;
   signIn: ({ token, user, accessMenus }: SignIn) => void;
   signOut: () => Promise<void>;
   handleRefreshToken: () => Promise<void>;
+  setMenuAction: (pathname: string) => void;
 }
 
 interface Props {
@@ -81,15 +90,27 @@ const initialUserData: User = {
   },
 };
 
+const initialMenuAction: MenuAction = {
+  slug: "",
+  actions: {
+    isRead: false,
+    isCreate: false,
+    isUpdate: false,
+    isDelete: false,
+  },
+};
+
 const initialState: State = {
   isLoading: true,
   userRefresh: "",
   userData: initialUserData,
   userMenu: [],
+  menuAction: initialMenuAction,
   refreshToken: () => {},
   signIn: () => {},
   signOut: async () => {},
   handleRefreshToken: async () => {},
+  setMenuAction: () => {},
 };
 
 export const AuthContext = createContext<State>(initialState);
@@ -118,6 +139,12 @@ const loginReducer = (prevState: State, action: ACTIONTYPE) => {
         userRefresh: "",
         userData: initialUserData,
         userMenu: [],
+        isLoading: false,
+      };
+    case ActionKind.SET_MENU_ACTION:
+      return {
+        ...prevState,
+        menuAction: action.menuAction,
         isLoading: false,
       };
     default:
@@ -215,6 +242,15 @@ const AuthProvider = ({ children }: Props): JSX.Element => {
     }
   }, [state.userRefresh, signOut]);
 
+  const setMenuAction = useCallback(
+    (pathname: string) => {
+      const menuAction = getMenuAction(pathname, state.userMenu);
+
+      dispatch({ type: ActionKind.SET_MENU_ACTION, menuAction });
+    },
+    [state.userMenu]
+  );
+
   return (
     <AuthContext.Provider
       value={{
@@ -222,6 +258,7 @@ const AuthProvider = ({ children }: Props): JSX.Element => {
         signIn,
         signOut,
         handleRefreshToken,
+        setMenuAction,
       }}
     >
       {children}

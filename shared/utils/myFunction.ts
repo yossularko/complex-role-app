@@ -1,5 +1,6 @@
 import { Buffer } from "buffer";
 import CryptoJS from "crypto-js";
+import { MenuAction } from "../types";
 import { AccessMenu } from "../types/login";
 
 const secretKey = process.env.app_secret as string;
@@ -102,23 +103,51 @@ const createMenuSingle = (treeData: AccessMenu[]): AccessMenu[] => {
   }, []);
 };
 
-const getMenuAction = (pathname: string, treeData: AccessMenu[]) => {
-  if (!pathname || treeData.length === 0) {
-    return {
-      slug: "",
-      actions: {
-        isRead: false,
-        isCreate: false,
-        isUpdate: false,
-        isDelete: false,
-      },
-    };
+const getMenuAction = (
+  pathname: string,
+  treeData: AccessMenu[]
+): MenuAction => {
+  const initialVal = {
+    slug: "",
+    actions: {
+      isRead: false,
+      isCreate: false,
+      isUpdate: false,
+      isDelete: false,
+    },
+  };
+
+  const dashboardVal = {
+    slug: "dashboard",
+    actions: {
+      isRead: true,
+      isCreate: true,
+      isUpdate: true,
+      isDelete: true,
+    },
+  };
+
+  if (!pathname || !treeData) {
+    return initialVal;
+  }
+
+  if (pathname === "/dashboard") {
+    return dashboardVal;
+  }
+
+  if (treeData.length === 0) {
+    return initialVal;
   }
 
   const menuList = createMenuSingle(treeData);
   const splited = pathname.split("/");
   const currentSlug = splited[splited.length - 1];
   const idx = menuList.findIndex((val) => val.slug === currentSlug);
+
+  if (idx === -1) {
+    return initialVal;
+  }
+
   const currentMenu = menuList[idx];
 
   const actions = {
