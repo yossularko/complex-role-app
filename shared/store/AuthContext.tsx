@@ -67,7 +67,7 @@ interface State {
   refreshToken: (token: string) => void;
   signIn: ({ token, user, accessMenus }: SignIn) => void;
   signOut: () => Promise<void>;
-  handleRefreshToken: () => Promise<void>;
+  handleRefreshToken: (reloadOnSuccess?: boolean) => Promise<void>;
   setMenuAction: (pathname: string) => void;
 }
 
@@ -228,19 +228,25 @@ const AuthProvider = ({ children }: Props): JSX.Element => {
     location.reload();
   }, []);
 
-  const handleRefreshToken = useCallback(async () => {
-    const dataRefresh = {
-      refresh_token: state.userRefresh,
-    };
-    try {
-      await refreshToken(dataRefresh);
-      message.info("Silahkan coba lagi");
-      location.reload();
-    } catch (error) {
-      message.error("Silahkan login kembali");
-      signOut();
-    }
-  }, [state.userRefresh, signOut]);
+  const handleRefreshToken = useCallback(
+    async (reloadOnSuccess?: boolean) => {
+      const dataRefresh = {
+        refresh_token: state.userRefresh,
+      };
+      try {
+        await refreshToken(dataRefresh);
+        if (reloadOnSuccess) {
+          location.reload();
+        } else {
+          message.info("Silahkan coba lagi");
+        }
+      } catch (error) {
+        message.error("Silahkan login kembali");
+        signOut();
+      }
+    },
+    [state.userRefresh, signOut]
+  );
 
   const setMenuAction = useCallback(
     (pathname: string) => {

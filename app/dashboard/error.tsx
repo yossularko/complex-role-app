@@ -34,7 +34,7 @@ export default function Error({
 
       signOut();
     },
-    onError: (err: ErrorResponse) => myError(err, handleRefreshToken),
+    onError: (err: ErrorResponse) => myError(err, () => handleRefreshToken(true)),
   });
 
   const handleRefresh = useRef<() => Promise<void>>(async () => {});

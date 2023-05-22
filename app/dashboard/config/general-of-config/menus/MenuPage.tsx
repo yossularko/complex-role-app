@@ -110,7 +110,7 @@ const MenuPage = ({ initialData }: Props) => {
   };
 
   if (isError) {
-    myError(error, handleRefreshToken);
+    myError(error, () => handleRefreshToken(true));
   }
   return (
     <div>
