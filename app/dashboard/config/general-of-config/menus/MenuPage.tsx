@@ -7,38 +7,31 @@ import { ErrorResponse } from "@/shared/types/error";
 import { myError } from "@/shared/utils/myError";
 import { AuthContext } from "@/shared/store/AuthContext";
 import { Button, Space, Tree, Typography } from "antd";
-import type { DataNode, DirectoryTreeProps, EventDataNode } from "antd/es/tree";
+import type { DirectoryTreeProps, EventDataNode } from "antd/es/tree";
 import { useDisclosure } from "@/shared/hooks";
 import DrawerAddTopMenu from "./DrawerAddTopMenu";
+import { mainColor } from "@/shared/utils/colors";
 
 interface Props {
   initialData: Menu[];
 }
 
-type MenuProp = {
-  id: number;
-  slug: string;
-  name: string;
-  alias: string;
-  parent: string[];
-  createdAt: string;
-  updatedAt: string;
-};
-
 const { DirectoryTree } = Tree;
 const { Text, Title } = Typography;
 
+const initialSelected = {
+  id: 0,
+  slug: "",
+  name: "",
+  alias: "",
+  parent: [],
+  createdAt: "",
+  updatedAt: "",
+  isLeaf: false,
+};
+
 const MenuPage = ({ initialData }: Props) => {
-  const [selected, setSelected] = useState<MenuSelect>({
-    id: 0,
-    slug: "",
-    name: "",
-    alias: "",
-    parent: [],
-    createdAt: "",
-    updatedAt: "",
-    isLeaf: false,
-  });
+  const [selected, setSelected] = useState<MenuSelect>(initialSelected);
   const [selectType, setSeletType] = useState<
     "parent" | "update" | "add child"
   >("parent");
@@ -60,6 +53,7 @@ const MenuPage = ({ initialData }: Props) => {
       onSuccess: (dataSuccess) => {
         console.log("success delete: ", dataSuccess);
         refetch();
+        setSelected(initialSelected);
       },
       onError: (err: ErrorResponse) => myError(err, handleRefreshToken),
     }
@@ -125,29 +119,46 @@ const MenuPage = ({ initialData }: Props) => {
         data={selected}
         isOpen={isOpen}
         onClose={onClose}
-        onFinish={refetch}
+        onFinish={() => {
+          refetch();
+          setSelected(initialSelected);
+        }}
       />
       <Title level={2}>Menu{isLoading ? "..." : null}</Title>
-      <Space
-        style={{
-          width: "100%",
-          justifyContent: "space-between",
-          marginBottom: 10,
-        }}
-      >
-        <Space>
-          <Button onClick={() => refetch()}>Refetch</Button>
-          <Button
-            type="primary"
-            onClick={() => {
-              setSeletType("parent");
-              onOpen();
-            }}
-          >
-            Add Top Parent Menu
-          </Button>
-        </Space>
-        {selected.slug ? (
+      <Space style={{ marginBottom: 10 }}>
+        <Button onClick={() => refetch()}>Refetch</Button>
+        <Button
+          type="primary"
+          onClick={() => {
+            setSeletType("parent");
+            onOpen();
+          }}
+        >
+          Add Top Parent Menu
+        </Button>
+      </Space>
+      <DirectoryTree
+        multiple
+        defaultExpandAll
+        expandAction="doubleClick"
+        onSelect={onSelect}
+        onExpand={onExpand}
+        treeData={treeData}
+      />
+      {selected.slug ? (
+        <div
+          style={{
+            position: "fixed",
+            zIndex: 10,
+            backgroundColor: "white",
+            padding: 10,
+            borderRadius: 14,
+            border: `2px solid ${mainColor}`,
+            bottom: 40,
+            right: 40,
+          }}
+        >
+          <Title level={5}>{selected.alias}</Title>
           <Space>
             <Button
               onClick={() => {
@@ -172,15 +183,8 @@ const MenuPage = ({ initialData }: Props) => {
               </Button>
             ) : null}
           </Space>
-        ) : null}
-      </Space>
-      <DirectoryTree
-        multiple
-        defaultExpandAll
-        onSelect={onSelect}
-        onExpand={onExpand}
-        treeData={treeData}
-      />
+        </div>
+      ) : null}
     </div>
   );
 };
