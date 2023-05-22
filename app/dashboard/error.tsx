@@ -81,10 +81,12 @@ export default function Error({
   useEffect(() => {
     // Log the error to an error reporting service
     if (
-      String(error).includes("AxiosError") ||
+      String(error).includes("401") ||
       String(error).includes("digest")
     ) {
       handleRefresh.current();
+    } else {
+      setLoading(false)
     }
   }, [error]);
 
