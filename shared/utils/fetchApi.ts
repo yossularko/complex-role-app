@@ -1,5 +1,6 @@
 import axios, { AxiosRequestConfig } from "axios";
 import {
+  AccessMenuInputs,
   LoginInputs,
   MenuInputs,
   RefreshTokenInputs,
@@ -90,6 +91,17 @@ export const deleteMenu = async ({ slug }: { slug: string }) => {
 // Access Menu
 export const getAccessMenu = async (userId: number) => {
   const response = await fetchApi.get(`/access-menus?userId=${userId}`, {
+    withCredentials: true,
+  });
+  return response.data;
+};
+
+export const replaceAccessMenu = async ({
+  data,
+}: {
+  data: AccessMenuInputs;
+}) => {
+  const response = await fetchApi.post("/access-menus/replace", data, {
     withCredentials: true,
   });
   return response.data;

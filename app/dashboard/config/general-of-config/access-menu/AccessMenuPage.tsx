@@ -8,9 +8,14 @@ import {
   Menu,
   MenuNodeTree,
 } from "@/shared/types/menu";
-import { getAccessMenu, getMenus, getUsers } from "@/shared/utils/fetchApi";
+import {
+  getAccessMenu,
+  getMenus,
+  getUsers,
+  replaceAccessMenu,
+} from "@/shared/utils/fetchApi";
 import { myError } from "@/shared/utils/myError";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import React, {
   useCallback,
   useContext,
@@ -18,7 +23,7 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { Button, Select, Space, Typography } from "antd";
+import { Button, message, Select, Space, Typography } from "antd";
 import { AccessMenu } from "@/shared/types/login";
 import { DirectoryTreeProps, EventDataNode } from "antd/es/tree";
 import { Tree } from "antd";
@@ -108,6 +113,21 @@ const AccessMenuPage = ({ initialUser, initialMenu }: Props) => {
     }
   );
 
+  const { mutate: mutateReplace, isLoading: loadingReplace } = useMutation(
+    replaceAccessMenu,
+    {
+      onSuccess: (dataSuccess) => {
+        console.log("success replace: ", dataSuccess);
+        setSelected({
+          keys: [],
+          value: initialSelected,
+        });
+        accessMenu.refetch();
+      },
+      onError: (err: ErrorResponse) => myError(err, handleRefreshToken),
+    }
+  );
+
   // start tree data ======================
   const treeData = useMemo<MenuNodeTree[]>(() => {
     const handleCreateTree = (menus: Menu[]): MenuNodeTree[] => {
@@ -147,7 +167,9 @@ const AccessMenuPage = ({ initialUser, initialMenu }: Props) => {
       });
 
       if (isExist) {
-        setMasterAccsMenu((prev) => prev.filter((val) => val.menuSlug !== slug));
+        setMasterAccsMenu((prev) =>
+          prev.filter((val) => val.menuSlug !== slug)
+        );
       }
     }
 
@@ -244,19 +266,33 @@ const AccessMenuPage = ({ initialUser, initialMenu }: Props) => {
   );
 
   const handleApplyChange = useCallback(() => {
+    if (!userId) {
+      message.error("User Id is empty!");
+      return;
+    }
+
     const newChecked = checkedKeys as CheckVariant;
-    const menuListKey = [...newChecked.halfChecked, ...newChecked.checked] as string[];
-    const menuPost: AccessMenuPost[] = menuListKey.map(item => {
-      const idx = masterAccsMenu.findIndex(val => val.menuSlug === item);
-      if(idx !== -1){
-        return masterAccsMenu[idx]
+    const menuListKey = [
+      ...newChecked.halfChecked,
+      ...newChecked.checked,
+    ] as string[];
+
+    if (menuListKey.length === 0) {
+      message.error("Please select menu!");
+      return;
+    }
+
+    const menuPost: AccessMenuPost[] = menuListKey.map((item) => {
+      const idx = masterAccsMenu.findIndex((val) => val.menuSlug === item);
+      if (idx !== -1) {
+        return masterAccsMenu[idx];
       }
 
-      return {menuSlug: item, actions: []}
-    })
+      return { menuSlug: item, actions: [] };
+    });
 
-    console.log("menu post: ", menuPost)
-  }, [checkedKeys, masterAccsMenu]);
+    mutateReplace({ data: { userId, menus: menuPost } });
+  }, [checkedKeys, masterAccsMenu, mutateReplace, userId]);
 
   useLayoutEffect(() => {
     if (isError) {
@@ -302,7 +338,21 @@ const AccessMenuPage = ({ initialUser, initialMenu }: Props) => {
           />
         </div>
         <div style={{ width: 340, paddingRight: 16 }}>
-          <Title level={4}>List Menu Actions</Title>
+          <Space>
+            <Title level={4}>List Menu Actions</Title>
+            <Button
+              onClick={() => {
+                setMasterAccsMenu([]);
+                setCheckedKeys([]);
+                setSelected({
+                  keys: [],
+                  value: initialSelected,
+                });
+              }}
+            >
+              Clear
+            </Button>
+          </Space>
           {masterAccsMenu.map((item) => (
             <ActionList key={item.menuSlug} item={item} />
           ))}
