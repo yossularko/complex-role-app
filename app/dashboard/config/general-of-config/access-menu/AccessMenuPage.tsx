@@ -122,6 +122,14 @@ const AccessMenuPage = ({ initialUser, initialMenu }: Props) => {
   }, [data]);
 
   const onCheck: DirectoryTreeProps["onCheck"] = (checkedKeysValue, info) => {
+    const { slug } = info.node as EventDataNode<MenuNodeTree>;
+    if (!info.checked) {
+      const isExist = masterAccsMenu.some((item) => item.slug === slug);
+      if (isExist) {
+        setMasterAccsMenu((prev) => prev.filter((val) => val.slug !== slug));
+      }
+    }
+
     // @ts-ignore
     if (checkedKeysValue.checked) {
       setCheckedKeys(checkedKeysValue);
@@ -210,7 +218,7 @@ const AccessMenuPage = ({ initialUser, initialMenu }: Props) => {
         })}
       />
       <div style={{ display: "flex" }}>
-        <div style={{ flex: 1 }}>
+        <div style={{ flex: 1, marginRight: 10 }}>
           <DirectoryTree
             checkable
             defaultExpandAll
@@ -232,7 +240,7 @@ const AccessMenuPage = ({ initialUser, initialMenu }: Props) => {
       {/* @ts-ignore */}
       {checkedKeys.checked ? (
         <CardAbsolute style={{ zIndex: 10, bottom: 40, left: 40 }}>
-          <Button type="primary">Apply Access Menu</Button>
+          <Button type="primary">Apply Change</Button>
         </CardAbsolute>
       ) : null}
       {selected.value.slug ? (
