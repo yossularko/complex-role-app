@@ -26,7 +26,11 @@ import { getMenuLeaf } from "@/shared/utils/myFunction";
 import ActionList from "./ActionList";
 import { CardAbsolute } from "@/shared/components/main";
 import TagAction from "./TagAction";
-import { EditFilled, SafetyCertificateFilled } from "@ant-design/icons";
+import {
+  EditFilled,
+  SafetyCertificateFilled,
+  CheckOutlined,
+} from "@ant-design/icons";
 import { useDisclosure } from "@/shared/hooks";
 import DrawerConfigActions from "./DrawerConfigActions";
 
@@ -35,12 +39,12 @@ interface Props {
   initialMenu: Menu[];
 }
 
-type CheckedKeys =
-  | {
-      checked: React.Key[];
-      halfChecked: React.Key[];
-    }
-  | React.Key[];
+type CheckVariant = {
+  checked: React.Key[];
+  halfChecked: React.Key[];
+};
+
+type CheckedKeys = CheckVariant | React.Key[];
 
 const { Title } = Typography;
 const { DirectoryTree } = Tree;
@@ -94,7 +98,7 @@ const AccessMenuPage = ({ initialUser, initialMenu }: Props) => {
       onSuccess: (dataSuccess) => {
         const lists = getMenuLeaf(dataSuccess);
         const masterData = lists.map((item) => ({
-          slug: item.slug,
+          menuSlug: item.slug,
           actions: item.actions,
         }));
         const checkedVal = lists.map((item) => item.slug);
@@ -135,7 +139,7 @@ const AccessMenuPage = ({ initialUser, initialMenu }: Props) => {
   const onCheck: DirectoryTreeProps["onCheck"] = (checkedKeysValue, info) => {
     const { slug } = info.node as EventDataNode<MenuNodeTree>;
     if (!info.checked) {
-      const isExist = masterAccsMenu.some((item) => item.slug === slug);
+      const isExist = masterAccsMenu.some((item) => item.menuSlug === slug);
 
       setSelected({
         keys: [],
@@ -143,7 +147,7 @@ const AccessMenuPage = ({ initialUser, initialMenu }: Props) => {
       });
 
       if (isExist) {
-        setMasterAccsMenu((prev) => prev.filter((val) => val.slug !== slug));
+        setMasterAccsMenu((prev) => prev.filter((val) => val.menuSlug !== slug));
       }
     }
 
@@ -181,7 +185,7 @@ const AccessMenuPage = ({ initialUser, initialMenu }: Props) => {
       return;
     }
 
-    const idx = masterAccsMenu.findIndex((master) => master.slug === slug);
+    const idx = masterAccsMenu.findIndex((master) => master.menuSlug === slug);
     const dataAction = idx === -1 ? [] : masterAccsMenu[idx].actions;
 
     setSelected({
@@ -221,23 +225,38 @@ const AccessMenuPage = ({ initialUser, initialMenu }: Props) => {
       const { slug } = selected.value;
       const actions = values || ["create", "read", "update", "delete"];
       setMasterAccsMenu((prev) => {
-        const isExist = prev.some((val) => val.slug === slug);
+        const isExist = prev.some((val) => val.menuSlug === slug);
 
         if (isExist) {
           return prev.map((item) => {
-            if (item.slug === slug) {
+            if (item.menuSlug === slug) {
               return { ...item, actions };
             }
             return item;
           });
         }
 
-        return [{ slug, actions }, ...prev];
+        return [{ menuSlug: slug, actions }, ...prev];
       });
       setSelected((prev) => ({ ...prev, value: initialSelected }));
     },
     [selected.value]
   );
+
+  const handleApplyChange = useCallback(() => {
+    const newChecked = checkedKeys as CheckVariant;
+    const menuListKey = [...newChecked.halfChecked, ...newChecked.checked] as string[];
+    const menuPost: AccessMenuPost[] = menuListKey.map(item => {
+      const idx = masterAccsMenu.findIndex(val => val.menuSlug === item);
+      if(idx !== -1){
+        return masterAccsMenu[idx]
+      }
+
+      return {menuSlug: item, actions: []}
+    })
+
+    console.log("menu post: ", menuPost)
+  }, [checkedKeys, masterAccsMenu]);
 
   useLayoutEffect(() => {
     if (isError) {
@@ -285,14 +304,21 @@ const AccessMenuPage = ({ initialUser, initialMenu }: Props) => {
         <div style={{ width: 340, paddingRight: 16 }}>
           <Title level={4}>List Menu Actions</Title>
           {masterAccsMenu.map((item) => (
-            <ActionList key={item.slug} item={item} />
+            <ActionList key={item.menuSlug} item={item} />
           ))}
         </div>
       </div>
       {/* @ts-ignore */}
       {checkedKeys.checked ? (
         <CardAbsolute style={{ zIndex: 10, bottom: 40, left: 40 }}>
-          <Button type="primary">Apply Change</Button>
+          <Button
+            type="primary"
+            size="large"
+            icon={<CheckOutlined />}
+            onClick={handleApplyChange}
+          >
+            Apply Change
+          </Button>
         </CardAbsolute>
       ) : null}
       {selected.value.slug ? (

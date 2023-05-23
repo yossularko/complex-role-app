@@ -21,7 +21,7 @@ const ActionList = ({ item }: Props) => {
         borderRadius: 10,
       }}
     >
-      <Text>{item.slug}</Text>
+      <Text>{item.menuSlug}</Text>
       <br />
       <Space size={[0, 8]} wrap>
         {item.actions.map((act) => (
