@@ -27,6 +27,8 @@ import ActionList from "./ActionList";
 import { CardAbsolute } from "@/shared/components/main";
 import TagAction from "./TagAction";
 import { EditFilled, SafetyCertificateFilled } from "@ant-design/icons";
+import { useDisclosure } from "@/shared/hooks";
+import DrawerConfigActions from "./DrawerConfigActions";
 
 interface Props {
   initialUser: UserList[];
@@ -40,7 +42,7 @@ type CheckedKeys =
     }
   | React.Key[];
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 const { DirectoryTree } = Tree;
 
 const initialSelected = {
@@ -72,6 +74,8 @@ const AccessMenuPage = ({ initialUser, initialMenu }: Props) => {
   });
   const { handleRefreshToken } = useContext(AuthContext);
 
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
   const { data, isLoading, isError, error } = useQuery<
     [UserList[], Menu[]],
     ErrorResponse
@@ -100,6 +104,7 @@ const AccessMenuPage = ({ initialUser, initialMenu }: Props) => {
     }
   );
 
+  // start tree data ======================
   const treeData = useMemo<MenuNodeTree[]>(() => {
     const handleCreateTree = (menus: Menu[]): MenuNodeTree[] => {
       const maped: MenuNodeTree[] = menus.map((menu) => {
@@ -171,6 +176,11 @@ const AccessMenuPage = ({ initialUser, initialMenu }: Props) => {
       checked,
     } = info.node as EventDataNode<MenuNodeTree>;
 
+    if (slug === selected.value.slug) {
+      onOpen();
+      return;
+    }
+
     const idx = masterAccsMenu.findIndex((master) => master.slug === slug);
     const dataAction = idx === -1 ? [] : masterAccsMenu[idx].actions;
 
@@ -204,25 +214,30 @@ const AccessMenuPage = ({ initialUser, initialMenu }: Props) => {
       });
     }
   };
+  // end tree data ======================
 
-  const handleSetFullActions = useCallback(() => {
-    const { slug } = selected.value;
-    const actions = ["create", "read", "update", "delete"];
-    setMasterAccsMenu((prev) => {
-      const isExist = prev.some((val) => val.slug === slug);
+  const handleSetActions = useCallback(
+    (values?: string[]) => {
+      const { slug } = selected.value;
+      const actions = values || ["create", "read", "update", "delete"];
+      setMasterAccsMenu((prev) => {
+        const isExist = prev.some((val) => val.slug === slug);
 
-      if (isExist) {
-        return prev.map((item) => {
-          if (item.slug === slug) {
-            return { ...item, actions };
-          }
-          return item;
-        });
-      }
+        if (isExist) {
+          return prev.map((item) => {
+            if (item.slug === slug) {
+              return { ...item, actions };
+            }
+            return item;
+          });
+        }
 
-      return [{ slug, actions }, ...prev];
-    });
-  }, [selected.value]);
+        return [{ slug, actions }, ...prev];
+      });
+      setSelected((prev) => ({ ...prev, value: initialSelected }));
+    },
+    [selected.value]
+  );
 
   useLayoutEffect(() => {
     if (isError) {
@@ -236,6 +251,12 @@ const AccessMenuPage = ({ initialUser, initialMenu }: Props) => {
 
   return (
     <div>
+      <DrawerConfigActions
+        visible={isOpen}
+        onClose={onClose}
+        data={selected.value}
+        onSubmit={(val) => handleSetActions(val)}
+      />
       <Title level={2}>Access Menu{isLoading ? "..." : null}</Title>
       <Select
         placeholder="select user"
@@ -285,6 +306,7 @@ const AccessMenuPage = ({ initialUser, initialMenu }: Props) => {
                 shape="circle"
                 size="small"
                 disabled={!selected.value.isLeaf}
+                onClick={onOpen}
               />
               <Button
                 type="primary"
@@ -292,7 +314,7 @@ const AccessMenuPage = ({ initialUser, initialMenu }: Props) => {
                 shape="circle"
                 size="small"
                 disabled={!selected.value.isLeaf}
-                onClick={handleSetFullActions}
+                onClick={() => handleSetActions()}
               />
             </Space>
           </Space>
