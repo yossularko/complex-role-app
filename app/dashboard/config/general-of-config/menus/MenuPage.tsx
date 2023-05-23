@@ -16,14 +16,14 @@ import { Button, Space, Tree, Typography } from "antd";
 import type { DirectoryTreeProps, EventDataNode } from "antd/es/tree";
 import { useDisclosure } from "@/shared/hooks";
 import DrawerAddTopMenu from "./DrawerAddTopMenu";
-import { mainColor } from "@/shared/utils/colors";
+import { CardAbsolute } from "@/shared/components/main";
 
 interface Props {
   initialData: Menu[];
 }
 
 const { DirectoryTree } = Tree;
-const { Text, Title } = Typography;
+const { Title } = Typography;
 
 const initialSelected = {
   id: 0,
@@ -155,18 +155,7 @@ const MenuPage = ({ initialData }: Props) => {
         treeData={treeData}
       />
       {selected.slug ? (
-        <div
-          style={{
-            position: "fixed",
-            zIndex: 10,
-            backgroundColor: "white",
-            padding: 10,
-            borderRadius: 14,
-            border: `2px solid ${mainColor}`,
-            bottom: 40,
-            right: 40,
-          }}
-        >
+        <CardAbsolute style={{ zIndex: 10, bottom: 40, right: 40 }}>
           <Title level={5}>{selected.alias}</Title>
           <Space>
             <Button
@@ -192,7 +181,7 @@ const MenuPage = ({ initialData }: Props) => {
               </Button>
             ) : null}
           </Space>
-        </div>
+        </CardAbsolute>
       ) : null}
     </div>
   );
