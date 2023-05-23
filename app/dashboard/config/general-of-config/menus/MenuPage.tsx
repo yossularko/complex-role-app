@@ -1,7 +1,13 @@
 "use client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Menu, MenuNodeTree, MenuSelect } from "@/shared/types/menu";
-import React, { useCallback, useContext, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { deleteMenu, getMenus } from "@/shared/utils/fetchApi";
 import { ErrorResponse } from "@/shared/types/error";
 import { myError } from "@/shared/utils/myError";
@@ -109,9 +115,12 @@ const MenuPage = ({ initialData }: Props) => {
     console.log("Trigger Expand", keys, info);
   };
 
-  if (isError) {
-    myError(error, () => handleRefreshToken(true));
-  }
+  useEffect(() => {
+    if (isError) {
+      myError(error, () => handleRefreshToken(true));
+    }
+  }, [isError, error, handleRefreshToken]);
+
   return (
     <div>
       <DrawerAddTopMenu
