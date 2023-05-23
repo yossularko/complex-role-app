@@ -11,7 +11,13 @@ import {
 import { getAccessMenu, getMenus, getUsers } from "@/shared/utils/fetchApi";
 import { myError } from "@/shared/utils/myError";
 import { useQuery } from "@tanstack/react-query";
-import React, { useContext, useLayoutEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from "react";
 import { Button, Select, Space, Typography } from "antd";
 import { AccessMenu } from "@/shared/types/login";
 import { DirectoryTreeProps, EventDataNode } from "antd/es/tree";
@@ -20,7 +26,7 @@ import { getMenuLeaf } from "@/shared/utils/myFunction";
 import ActionList from "./ActionList";
 import { CardAbsolute } from "@/shared/components/main";
 import TagAction from "./TagAction";
-import { EditFilled } from "@ant-design/icons";
+import { EditFilled, SafetyCertificateFilled } from "@ant-design/icons";
 
 interface Props {
   initialUser: UserList[];
@@ -125,6 +131,12 @@ const AccessMenuPage = ({ initialUser, initialMenu }: Props) => {
     const { slug } = info.node as EventDataNode<MenuNodeTree>;
     if (!info.checked) {
       const isExist = masterAccsMenu.some((item) => item.slug === slug);
+
+      setSelected({
+        keys: [],
+        value: initialSelected,
+      });
+
       if (isExist) {
         setMasterAccsMenu((prev) => prev.filter((val) => val.slug !== slug));
       }
@@ -193,6 +205,25 @@ const AccessMenuPage = ({ initialUser, initialMenu }: Props) => {
     }
   };
 
+  const handleSetFullActions = useCallback(() => {
+    const { slug } = selected.value;
+    const actions = ["create", "read", "update", "delete"];
+    setMasterAccsMenu((prev) => {
+      const isExist = prev.some((val) => val.slug === slug);
+
+      if (isExist) {
+        return prev.map((item) => {
+          if (item.slug === slug) {
+            return { ...item, actions };
+          }
+          return item;
+        });
+      }
+
+      return [{ slug, actions }, ...prev];
+    });
+  }, [selected.value]);
+
   useLayoutEffect(() => {
     if (isError) {
       myError(error, () => handleRefreshToken(true));
@@ -247,13 +278,23 @@ const AccessMenuPage = ({ initialUser, initialMenu }: Props) => {
         <CardAbsolute style={{ zIndex: 11, bottom: 40, right: 40 }}>
           <Space>
             <Title level={5}>{selected.value.alias}</Title>
-            <Button
-              type="primary"
-              icon={<EditFilled />}
-              shape="circle"
-              size="small"
-              disabled={!selected.value.isLeaf}
-            />
+            <Space>
+              <Button
+                type="primary"
+                icon={<EditFilled />}
+                shape="circle"
+                size="small"
+                disabled={!selected.value.isLeaf}
+              />
+              <Button
+                type="primary"
+                icon={<SafetyCertificateFilled />}
+                shape="circle"
+                size="small"
+                disabled={!selected.value.isLeaf}
+                onClick={handleSetFullActions}
+              />
+            </Space>
           </Space>
           <br />
           <Space size={[0, 8]} wrap>
