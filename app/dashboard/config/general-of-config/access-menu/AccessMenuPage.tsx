@@ -20,7 +20,7 @@ import { getMenuLeaf } from "@/shared/utils/myFunction";
 import ActionList from "./ActionList";
 import { CardAbsolute } from "@/shared/components/main";
 import TagAction from "./TagAction";
-import { EditFilled } from '@ant-design/icons';
+import { EditFilled } from "@ant-design/icons";
 
 interface Props {
   initialUser: UserList[];
@@ -168,7 +168,7 @@ const AccessMenuPage = ({ initialUser, initialMenu }: Props) => {
         isLeaf: isLeaf || false,
       },
     });
-    if (checked === false) {
+    if (!checked && isLeaf) {
       setCheckedKeys((prev) => {
         // @ts-ignore
         if (prev.checked) {
@@ -214,6 +214,7 @@ const AccessMenuPage = ({ initialUser, initialMenu }: Props) => {
           <DirectoryTree
             checkable
             defaultExpandAll
+            expandAction="doubleClick"
             onCheck={onCheck}
             checkedKeys={checkedKeys}
             onSelect={onSelect}
@@ -238,7 +239,13 @@ const AccessMenuPage = ({ initialUser, initialMenu }: Props) => {
         <CardAbsolute style={{ zIndex: 11, bottom: 40, right: 40 }}>
           <Space>
             <Title level={5}>{selected.value.alias}</Title>
-            <Button type="primary" icon={<EditFilled />} shape="circle" size="small" />
+            <Button
+              type="primary"
+              icon={<EditFilled />}
+              shape="circle"
+              size="small"
+              disabled={!selected.value.isLeaf}
+            />
           </Space>
           <br />
           <Space size={[0, 8]} wrap>
