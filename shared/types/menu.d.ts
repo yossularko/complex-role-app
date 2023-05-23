@@ -24,3 +24,8 @@ type MenuProp = {
 export type MenuNodeTree = DataNode & MenuProp;
 
 export type MenuSelect = MenuProp & { isLeaf: boolean };
+
+export interface AccessMenuPost {
+  slug: string;
+  actions: string[];
+}

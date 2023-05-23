@@ -29,4 +29,5 @@ export interface AccessMenu {
   updatedAt: string;
   actions: string[];
   children?: AccessMenu[];
+  isLeaf?: boolean; // for list data
 }

@@ -89,18 +89,30 @@ const downloadFile = (data: Blob, filename: string) => {
   a.remove(); //afterwards we remove the element again
 };
 
-const createMenuSingle = (treeData: AccessMenu[]): AccessMenu[] => {
+const createMenuSingle = (
+  treeData: AccessMenu[],
+  addIsLeaf?: boolean
+): AccessMenu[] => {
   return treeData.reduce<AccessMenu[]>((acc, curr) => {
     const { children, ...rest } = curr;
     if (children) {
-      const next = createMenuSingle(children);
+      const next = createMenuSingle(children, addIsLeaf);
       acc.push(rest, ...next);
     } else {
-      acc.push(rest);
+      if (addIsLeaf) {
+        acc.push({ ...rest, isLeaf: true });
+      } else {
+        acc.push(rest);
+      }
     }
 
     return acc;
   }, []);
+};
+
+const getMenuLeaf = (treeData: AccessMenu[]) => {
+  const lists = createMenuSingle(treeData, true);
+  return lists.filter((list) => list.isLeaf === true);
 };
 
 const getMenuAction = (
@@ -168,5 +180,7 @@ export {
   encryptJson,
   decryptJson,
   downloadFile,
+  createMenuSingle,
+  getMenuLeaf,
   getMenuAction,
 };
