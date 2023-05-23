@@ -1,30 +1,15 @@
 "use client";
 import { AccessMenuPost } from "@/shared/types/menu";
 import { brightColor } from "@/shared/utils/colors";
-import { Space, Tag, Typography } from "antd";
-import React, { useMemo } from "react";
+import { Space, Typography } from "antd";
+import React from "react";
+import TagAction from "./TagAction";
 
 const { Text } = Typography;
 
 interface Props {
   item: AccessMenuPost;
 }
-
-const TagActions = ({ action }: { action: string }) => {
-  const tagColor = useMemo(() => {
-    return action === "create"
-      ? "blue"
-      : action === "read"
-      ? "lime"
-      : action === "update"
-      ? "gold"
-      : action === "delete"
-      ? "red"
-      : undefined;
-  }, [action]);
-
-  return <Tag color={tagColor}>{action}</Tag>;
-};
 
 const ActionList = ({ item }: Props) => {
   return (
@@ -40,7 +25,7 @@ const ActionList = ({ item }: Props) => {
       <br />
       <Space size={[0, 8]} wrap>
         {item.actions.map((act) => (
-          <TagActions key={act} action={act} />
+          <TagAction key={act} action={act} />
         ))}
       </Space>
     </div>

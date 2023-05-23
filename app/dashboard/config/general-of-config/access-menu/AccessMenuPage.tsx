@@ -4,20 +4,23 @@ import { UserList } from "@/shared/types";
 import { ErrorResponse } from "@/shared/types/error";
 import {
   AccessMenuPost,
+  AccsMenuSelect,
   Menu,
   MenuNodeTree,
-  MenuSelect,
 } from "@/shared/types/menu";
 import { getAccessMenu, getMenus, getUsers } from "@/shared/utils/fetchApi";
 import { myError } from "@/shared/utils/myError";
 import { useQuery } from "@tanstack/react-query";
 import React, { useContext, useLayoutEffect, useMemo, useState } from "react";
-import { Select, Typography } from "antd";
+import { Button, Select, Space, Typography } from "antd";
 import { AccessMenu } from "@/shared/types/login";
 import { DirectoryTreeProps, EventDataNode } from "antd/es/tree";
 import { Tree } from "antd";
 import { getMenuLeaf } from "@/shared/utils/myFunction";
 import ActionList from "./ActionList";
+import { CardAbsolute } from "@/shared/components/main";
+import TagAction from "./TagAction";
+import { EditFilled } from '@ant-design/icons';
 
 interface Props {
   initialUser: UserList[];
@@ -42,6 +45,7 @@ const initialSelected = {
   parent: [],
   createdAt: "",
   updatedAt: "",
+  actions: [],
   isLeaf: false,
 };
 
@@ -55,7 +59,7 @@ const AccessMenuPage = ({ initialUser, initialMenu }: Props) => {
   const [checkedKeys, setCheckedKeys] = useState<CheckedKeys>([]);
   const [selected, setSelected] = useState<{
     keys: React.Key[];
-    value: MenuSelect;
+    value: AccsMenuSelect;
   }>({
     keys: [],
     value: initialSelected,
@@ -146,6 +150,10 @@ const AccessMenuPage = ({ initialUser, initialMenu }: Props) => {
       isLeaf,
       checked,
     } = info.node as EventDataNode<MenuNodeTree>;
+
+    const idx = masterAccsMenu.findIndex((master) => master.slug === slug);
+    const dataAction = idx === -1 ? [] : masterAccsMenu[idx].actions;
+
     setSelected({
       keys: selectedKeysValue,
       value: {
@@ -156,6 +164,7 @@ const AccessMenuPage = ({ initialUser, initialMenu }: Props) => {
         parent,
         createdAt,
         updatedAt,
+        actions: dataAction,
         isLeaf: isLeaf || false,
       },
     });
@@ -219,6 +228,26 @@ const AccessMenuPage = ({ initialUser, initialMenu }: Props) => {
           ))}
         </div>
       </div>
+      {/* @ts-ignore */}
+      {checkedKeys.checked ? (
+        <CardAbsolute style={{ zIndex: 10, bottom: 40, left: 40 }}>
+          <Button type="primary">Apply Access Menu</Button>
+        </CardAbsolute>
+      ) : null}
+      {selected.value.slug ? (
+        <CardAbsolute style={{ zIndex: 11, bottom: 40, right: 40 }}>
+          <Space>
+            <Title level={5}>{selected.value.alias}</Title>
+            <Button type="primary" icon={<EditFilled />} shape="circle" size="small" />
+          </Space>
+          <br />
+          <Space size={[0, 8]} wrap>
+            {selected.value.actions.map((act) => (
+              <TagAction key={act} action={act} />
+            ))}
+          </Space>
+        </CardAbsolute>
+      ) : null}
     </div>
   );
 };
