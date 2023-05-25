@@ -9,17 +9,18 @@ import React, {
   useState,
 } from "react";
 import { deleteMenu, getMenus } from "@/shared/utils/fetchApi";
-import { ErrorResponse } from "@/shared/types/error";
+import { ErrorObj, ErrorResponse } from "@/shared/types/error";
 import { myError } from "@/shared/utils/myError";
 import { AuthContext } from "@/shared/store/AuthContext";
 import { Button, Space, Tree, Typography } from "antd";
 import type { DirectoryTreeProps, EventDataNode } from "antd/es/tree";
 import { useDisclosure } from "@/shared/hooks";
 import DrawerAddTopMenu from "./DrawerAddTopMenu";
-import { CardAbsolute } from "@/shared/components/main";
+import { CardAbsolute, ErrorComp } from "@/shared/components/main";
 
 interface Props {
   initialData: Menu[];
+  errorRes?: ErrorObj;
 }
 
 const { DirectoryTree } = Tree;
@@ -36,7 +37,7 @@ const initialSelected = {
   isLeaf: false,
 };
 
-const MenuPage = ({ initialData }: Props) => {
+const MenuPage = ({ initialData, errorRes }: Props) => {
   const [selected, setSelected] = useState<MenuSelect>(initialSelected);
   const [selectType, setSeletType] = useState<
     "parent" | "update" | "add child"
@@ -49,6 +50,7 @@ const MenuPage = ({ initialData }: Props) => {
     Menu[],
     ErrorResponse
   >(["menus"], () => getMenus(), {
+    enabled: errorRes ? false : true,
     initialData: initialData,
     refetchOnWindowFocus: false,
   });
@@ -120,6 +122,10 @@ const MenuPage = ({ initialData }: Props) => {
       myError(error, () => handleRefreshToken(true));
     }
   }, [isError, error, handleRefreshToken]);
+
+  if (errorRes) {
+    return <ErrorComp error={errorRes} />;
+  }
 
   return (
     <div>

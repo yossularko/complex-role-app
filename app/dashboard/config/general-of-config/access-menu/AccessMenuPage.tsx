@@ -1,7 +1,7 @@
 "use client";
 import { AuthContext } from "@/shared/store/AuthContext";
 import { UserList } from "@/shared/types";
-import { ErrorResponse } from "@/shared/types/error";
+import { ErrorObj, ErrorResponse } from "@/shared/types/error";
 import {
   AccessMenuPost,
   AccsMenuSelect,
@@ -29,7 +29,7 @@ import { DirectoryTreeProps, EventDataNode } from "antd/es/tree";
 import { Tree } from "antd";
 import { getMenuLeaf } from "@/shared/utils/myFunction";
 import ActionList from "./ActionList";
-import { CardAbsolute } from "@/shared/components/main";
+import { CardAbsolute, ErrorComp } from "@/shared/components/main";
 import TagAction from "./TagAction";
 import {
   EditFilled,
@@ -42,6 +42,7 @@ import DrawerConfigActions from "./DrawerConfigActions";
 interface Props {
   initialUser: UserList[];
   initialMenu: Menu[];
+  errorRes?: ErrorObj;
 }
 
 type CheckVariant = {
@@ -70,7 +71,7 @@ const getData = async () => {
   return await Promise.all([getUsers(), getMenus()]);
 };
 
-const AccessMenuPage = ({ initialUser, initialMenu }: Props) => {
+const AccessMenuPage = ({ initialUser, initialMenu, errorRes }: Props) => {
   const [userId, setUserId] = useState(0);
   const [masterAccsMenu, setMasterAccsMenu] = useState<AccessMenuPost[]>([]);
   const [checkedKeys, setCheckedKeys] = useState<CheckedKeys>([]);
@@ -89,6 +90,7 @@ const AccessMenuPage = ({ initialUser, initialMenu }: Props) => {
     [UserList[], Menu[]],
     ErrorResponse
   >(["users-menus"], () => getData(), {
+    enabled: errorRes ? false : true,
     initialData: [initialUser, initialMenu],
     refetchOnWindowFocus: false,
   });
@@ -303,6 +305,10 @@ const AccessMenuPage = ({ initialUser, initialMenu }: Props) => {
       myError(accessMenu.error, () => handleRefreshToken(true));
     }
   }, [accessMenu, error, isError, handleRefreshToken]);
+
+  if (errorRes) {
+    return <ErrorComp error={errorRes} />;
+  }
 
   return (
     <div>
