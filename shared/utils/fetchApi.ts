@@ -151,3 +151,45 @@ export const deleteTemplateMenu = async ({ id }: { id: number }) => {
   });
   return response.data;
 };
+
+// Projects
+export const getProjects = async (bearer?: string) => {
+  const response = await fetchApi.get("/projects", findConfig(bearer));
+  return response.data;
+};
+
+export const getProjectDetail = async (id: number) => {
+  const response = await fetchApi.get(`/projects/${id}`, {
+    withCredentials: true,
+  });
+  return response.data;
+};
+
+export const addProject = async () => {
+  const response = await fetchApi.post(
+    "/projects",
+    {},
+    {
+      withCredentials: true,
+    }
+  );
+  return response.data;
+};
+
+export const updateProject = async ({ id }: { id: number }) => {
+  const response = await fetchApi.patch(
+    `/projects/${id}`,
+    {},
+    {
+      withCredentials: true,
+    }
+  );
+  return response.data;
+};
+
+export const deleteProject = async ({ id }: { id: number }) => {
+  const response = await fetchApi.delete(`/projects/${id}`, {
+    withCredentials: true,
+  });
+  return response.data;
+};
