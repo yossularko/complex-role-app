@@ -25,6 +25,6 @@ export interface AccessMenuInputs {
 }
 
 export interface TemplateMenuInputs {
-  name: string;
+  name?: string;
   menus: AccessMenuPost[];
 }

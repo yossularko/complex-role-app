@@ -25,7 +25,7 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { Button, message, Select, Space, Typography } from "antd";
+import { Button, Dropdown, message, Select, Space, Typography } from "antd";
 import { AccessMenu } from "@/shared/types/login";
 import { DirectoryTreeProps, EventDataNode } from "antd/es/tree";
 import { Tree } from "antd";
@@ -40,6 +40,7 @@ import {
 } from "@ant-design/icons";
 import { useDisclosure } from "@/shared/hooks";
 import DrawerConfigActions from "./DrawerConfigActions";
+import DrawerTemplateMenu from "./DrawerTemplateMenu";
 
 interface Props {
   initialUser: UserList[];
@@ -81,6 +82,8 @@ const AccessMenuPage = ({
   errorRes,
 }: Props) => {
   const [userId, setUserId] = useState(0);
+  const [isUpdateTemp, setIsUpdateTemp] = useState(false);
+
   const [masterAccsMenu, setMasterAccsMenu] = useState<AccessMenuPost[]>([]);
   const [checkedKeys, setCheckedKeys] = useState<CheckedKeys>([]);
   const [selected, setSelected] = useState<{
@@ -93,8 +96,13 @@ const AccessMenuPage = ({
   const { handleRefreshToken } = useContext(AuthContext);
 
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const {
+    isOpen: isTemplate,
+    onOpen: openTemplate,
+    onClose: closeTemplate,
+  } = useDisclosure();
 
-  const { data, isLoading, isError, error } = useQuery<
+  const { data, isLoading, isError, error, refetch } = useQuery<
     [UserList[], Menu[], TemplateMenu[]],
     ErrorResponse
   >(["users-menus"], () => getData(), {
@@ -304,6 +312,20 @@ const AccessMenuPage = ({
     mutateReplace({ data: { userId, menus: menuPost } });
   }, [checkedKeys, masterAccsMenu, mutateReplace, userId]);
 
+  const handleMore = useCallback(
+    (key: string) => {
+      if (key === "add") {
+        setIsUpdateTemp(false);
+        openTemplate();
+        return;
+      }
+
+      setIsUpdateTemp(true);
+      openTemplate();
+    },
+    [openTemplate]
+  );
+
   useLayoutEffect(() => {
     if (isError) {
       myError(error, () => handleRefreshToken(true));
@@ -325,6 +347,25 @@ const AccessMenuPage = ({
         onClose={onClose}
         data={selected.value}
         onSubmit={(val) => handleSetActions(val)}
+      />
+      <DrawerTemplateMenu
+        isUpdate={isUpdateTemp}
+        visible={isTemplate}
+        onClose={closeTemplate}
+        checkedKeys={checkedKeys as CheckVariant}
+        masterAccsMenu={masterAccsMenu}
+        templateMenu={data[2]}
+        onFinish={() => {
+          refetch().then(() => {
+            setMasterAccsMenu([]);
+            setCheckedKeys([]);
+            setSelected({
+              keys: [],
+              value: initialSelected,
+            });
+            setUserId(0);
+          });
+        }}
       />
       <Title level={2}>Access Menu{isLoading ? "..." : null}</Title>
       <Select
@@ -373,7 +414,7 @@ const AccessMenuPage = ({
               Clear
             </Button>
           </Space>
-          <div style={{ maxHeight: "500px" }}>
+          <div style={{ maxHeight: "500px", overflowY: "auto" }}>
             {masterAccsMenu.map((item) => (
               <ActionList key={item.menuSlug} item={item} />
             ))}
@@ -383,14 +424,21 @@ const AccessMenuPage = ({
       {/* @ts-ignore */}
       {checkedKeys.checked ? (
         <CardAbsolute style={{ zIndex: 10, bottom: 40, left: 40 }}>
-          <Button
+          <Dropdown.Button
+            menu={{
+              items: [
+                { key: "add", label: "Add Template" },
+                { key: "update", label: "Update Template" },
+              ],
+              onClick: (e) => handleMore(e.key),
+            }}
             type="primary"
             size="large"
-            icon={<CheckOutlined />}
             onClick={handleApplyChange}
+            loading={loadingReplace}
           >
             Apply Change
-          </Button>
+          </Dropdown.Button>
         </CardAbsolute>
       ) : null}
       {selected.value.slug ? (
