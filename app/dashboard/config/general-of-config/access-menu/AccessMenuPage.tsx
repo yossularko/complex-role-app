@@ -7,10 +7,12 @@ import {
   AccsMenuSelect,
   Menu,
   MenuNodeTree,
+  TemplateMenu,
 } from "@/shared/types/menu";
 import {
   getAccessMenu,
   getMenus,
+  getTemplateMenus,
   getUsers,
   replaceAccessMenu,
 } from "@/shared/utils/fetchApi";
@@ -42,6 +44,7 @@ import DrawerConfigActions from "./DrawerConfigActions";
 interface Props {
   initialUser: UserList[];
   initialMenu: Menu[];
+  initialTemplate: TemplateMenu[];
   errorRes?: ErrorObj;
 }
 
@@ -68,10 +71,15 @@ const initialSelected = {
 };
 
 const getData = async () => {
-  return await Promise.all([getUsers(), getMenus()]);
+  return await Promise.all([getUsers(), getMenus(), getTemplateMenus()]);
 };
 
-const AccessMenuPage = ({ initialUser, initialMenu, errorRes }: Props) => {
+const AccessMenuPage = ({
+  initialUser,
+  initialMenu,
+  initialTemplate,
+  errorRes,
+}: Props) => {
   const [userId, setUserId] = useState(0);
   const [masterAccsMenu, setMasterAccsMenu] = useState<AccessMenuPost[]>([]);
   const [checkedKeys, setCheckedKeys] = useState<CheckedKeys>([]);
@@ -87,11 +95,11 @@ const AccessMenuPage = ({ initialUser, initialMenu, errorRes }: Props) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const { data, isLoading, isError, error } = useQuery<
-    [UserList[], Menu[]],
+    [UserList[], Menu[], TemplateMenu[]],
     ErrorResponse
   >(["users-menus"], () => getData(), {
     enabled: errorRes ? false : true,
-    initialData: [initialUser, initialMenu],
+    initialData: [initialUser, initialMenu, initialTemplate],
     refetchOnWindowFocus: false,
   });
 
@@ -344,7 +352,13 @@ const AccessMenuPage = ({ initialUser, initialMenu, errorRes }: Props) => {
           />
         </div>
         <div style={{ width: 340, paddingRight: 16 }}>
-          <Space>
+          <Title level={4}>Template Menu</Title>
+          <div>
+            <pre>
+              <code>{JSON.stringify(data[2], null, 2)}</code>
+            </pre>
+          </div>
+          <Space style={{ marginTop: 20 }}>
             <Title level={4}>List Menu Actions</Title>
             <Button
               onClick={() => {
@@ -359,9 +373,11 @@ const AccessMenuPage = ({ initialUser, initialMenu, errorRes }: Props) => {
               Clear
             </Button>
           </Space>
-          {masterAccsMenu.map((item) => (
-            <ActionList key={item.menuSlug} item={item} />
-          ))}
+          <div style={{ maxHeight: "500px" }}>
+            {masterAccsMenu.map((item) => (
+              <ActionList key={item.menuSlug} item={item} />
+            ))}
+          </div>
         </div>
       </div>
       {/* @ts-ignore */}

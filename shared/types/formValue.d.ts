@@ -23,3 +23,8 @@ export interface AccessMenuInputs {
   userId: number;
   menus: AccessMenuPost[];
 }
+
+export interface TemplateMenuInputs {
+  name: string;
+  menus: AccessMenuPost[];
+}

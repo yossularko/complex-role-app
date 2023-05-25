@@ -5,6 +5,7 @@ import {
   MenuInputs,
   RefreshTokenInputs,
   RegisterInputs,
+  TemplateMenuInputs,
 } from "../types/formValue";
 
 export const fetchApi = axios.create({
@@ -102,6 +103,50 @@ export const replaceAccessMenu = async ({
   data: AccessMenuInputs;
 }) => {
   const response = await fetchApi.post("/access-menus/replace", data, {
+    withCredentials: true,
+  });
+  return response.data;
+};
+
+// Template Menu
+export const getTemplateMenus = async (bearer?: string) => {
+  const response = await fetchApi.get("/template-menus", findConfig(bearer));
+  return response.data;
+};
+
+export const getTemplateMenuDetail = async (id: number) => {
+  const response = await fetchApi.get(`/template-menus/${id}`, {
+    withCredentials: true,
+  });
+  return response.data;
+};
+
+export const addTemplateMenu = async ({
+  data,
+}: {
+  data: TemplateMenuInputs;
+}) => {
+  const response = await fetchApi.post("/template-menus", data, {
+    withCredentials: true,
+  });
+  return response.data;
+};
+
+export const updateTemplateMenu = async ({
+  id,
+  data,
+}: {
+  id: number;
+  data: TemplateMenuInputs;
+}) => {
+  const response = await fetchApi.patch(`/template-menus/${id}`, data, {
+    withCredentials: true,
+  });
+  return response.data;
+};
+
+export const deleteTemplateMenu = async ({ id }: { id: number }) => {
+  const response = await fetchApi.delete(`/template-menus/${id}`, {
     withCredentials: true,
   });
   return response.data;
