@@ -1,6 +1,7 @@
 import { Buffer } from "buffer";
 import CryptoJS from "crypto-js";
 import { MenuAction } from "../types";
+import { ErrorObj, ErrorResponse } from "../types/error";
 import { AccessMenu } from "../types/login";
 
 const secretKey = process.env.app_secret as string;
@@ -172,6 +173,41 @@ const getMenuAction = (
   return { slug: currentMenu.slug, actions };
 };
 
+const getErrorRes = (err: ErrorResponse): ErrorObj => {
+  let errorRes: ErrorObj = {
+    code: "",
+    message: String(err),
+  };
+
+  if (err.code) {
+    errorRes = {
+      code: err.code,
+      message: err.message,
+    };
+  }
+
+  if (err.response?.data) {
+    const { statusCode, status, message: messageRes } = err.response.data;
+    const newMessage =
+      typeof messageRes === "string" ? messageRes : messageRes[0];
+    if (statusCode) {
+      errorRes = {
+        code: statusCode,
+        message: newMessage,
+      };
+    }
+
+    if (status) {
+      errorRes = {
+        code: status,
+        message: newMessage,
+      };
+    }
+  }
+
+  return errorRes;
+};
+
 export {
   encodeBase64,
   decodeBase64,
@@ -183,4 +219,5 @@ export {
   createMenuSingle,
   getMenuLeaf,
   getMenuAction,
+  getErrorRes,
 };
