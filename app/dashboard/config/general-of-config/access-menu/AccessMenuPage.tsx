@@ -12,6 +12,7 @@ import {
 import {
   getAccessMenu,
   getMenus,
+  getTemplateMenuDetail,
   getTemplateMenus,
   getUsers,
   replaceAccessMenu,
@@ -25,7 +26,15 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { Button, Dropdown, message, Select, Space, Typography } from "antd";
+import {
+  Button,
+  Dropdown,
+  message,
+  Select,
+  Space,
+  Spin,
+  Typography,
+} from "antd";
 import { AccessMenu } from "@/shared/types/login";
 import { DirectoryTreeProps, EventDataNode } from "antd/es/tree";
 import { Tree } from "antd";
@@ -33,14 +42,11 @@ import { getMenuLeaf } from "@/shared/utils/myFunction";
 import ActionList from "./ActionList";
 import { CardAbsolute, ErrorComp } from "@/shared/components/main";
 import TagAction from "./TagAction";
-import {
-  EditFilled,
-  SafetyCertificateFilled,
-  CheckOutlined,
-} from "@ant-design/icons";
+import { EditFilled, SafetyCertificateFilled } from "@ant-design/icons";
 import { useDisclosure } from "@/shared/hooks";
 import DrawerConfigActions from "./DrawerConfigActions";
 import DrawerTemplateMenu from "./DrawerTemplateMenu";
+import { brightColor } from "@/shared/utils/colors";
 
 interface Props {
   initialUser: UserList[];
@@ -56,7 +62,7 @@ type CheckVariant = {
 
 type CheckedKeys = CheckVariant | React.Key[];
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 const { DirectoryTree } = Tree;
 
 const initialSelected = {
@@ -145,6 +151,22 @@ const AccessMenuPage = ({
       onError: (err: ErrorResponse) => myError(err, handleRefreshToken),
     }
   );
+
+  const { mutate: mutateGetTemplate, isLoading: loadingGetTemplate } =
+    useMutation(getTemplateMenuDetail, {
+      onSuccess: (dataSuccess) => {
+        const initData = dataSuccess;
+        const lists = getMenuLeaf(initData.menus as AccessMenu[]);
+        const masterData = lists.map((item) => ({
+          menuSlug: item.slug,
+          actions: item.actions,
+        }));
+        const checkedVal = lists.map((item) => item.slug);
+        setMasterAccsMenu(masterData);
+        setCheckedKeys(checkedVal);
+      },
+      onError: (err: ErrorResponse) => myError(err, handleRefreshToken),
+    });
 
   // start tree data ======================
   const treeData = useMemo<MenuNodeTree[]>(() => {
@@ -312,6 +334,13 @@ const AccessMenuPage = ({
     mutateReplace({ data: { userId, menus: menuPost } });
   }, [checkedKeys, masterAccsMenu, mutateReplace, userId]);
 
+  const handleApplyTemp = useCallback(
+    (template: TemplateMenu) => {
+      mutateGetTemplate(template.id);
+    },
+    [mutateGetTemplate]
+  );
+
   const handleMore = useCallback(
     (key: string) => {
       if (key === "add") {
@@ -393,14 +422,42 @@ const AccessMenuPage = ({
           />
         </div>
         <div style={{ width: 340, paddingRight: 16 }}>
-          <Title level={4}>Template Menu</Title>
-          <div>
-            <pre>
-              <code>{JSON.stringify(data[2], null, 2)}</code>
-            </pre>
+          <Title level={4}>
+            Template Menu {loadingGetTemplate && <Spin size="small" />}
+          </Title>
+          <div style={{ maxHeight: "320px", overflowY: "auto" }}>
+            {data[2].map((item) => {
+              return (
+                <div
+                  key={item.id}
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    backgroundColor: brightColor,
+                    marginBottom: 8,
+                    padding: 8,
+                    borderRadius: 10,
+                  }}
+                >
+                  <div style={{ flex: 1 }}>
+                    <Text>{item.name}</Text>
+                  </div>
+                  <Button
+                    type="primary"
+                    shape="round"
+                    size="small"
+                    onClick={() => handleApplyTemp(item)}
+                  >
+                    Apply
+                  </Button>
+                </div>
+              );
+            })}
           </div>
           <Space style={{ marginTop: 20 }}>
-            <Title level={4}>List Menu Actions</Title>
+            <Title level={4}>
+              List Menu Actions {`(${masterAccsMenu.length})`}
+            </Title>
             <Button
               onClick={() => {
                 setMasterAccsMenu([]);
