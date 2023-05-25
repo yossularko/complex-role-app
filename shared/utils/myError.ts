@@ -2,15 +2,30 @@ import { message } from "antd";
 import { ErrorResponse } from "../types/error";
 
 export const myError = (error: ErrorResponse, handle401?: () => void) => {
+  console.log("error: ", error)
   if (error.response?.data) {
-    if (error.response.status === 401) {
+    const { statusCode, status, message: messageRes } = error.response.data;
+    if (statusCode) {
+      if (statusCode === 401) {
+        if (handle401) {
+          handle401();
+          return;
+        }
+      }
+
+      message.error(`[${statusCode}] ${messageRes}`);
+      console.log("error response: ", error.response.data);
+      return;
+    }
+
+    if (status === 401) {
       if (handle401) {
         handle401();
         return;
       }
     }
 
-    message.error(`[${error.response.status}] ${error.response.data.message}`);
+    message.error(`[${status}] ${messageRes}`);
     console.log("error response: ", error.response.data);
     return;
   }
@@ -27,7 +42,14 @@ export const myError = (error: ErrorResponse, handle401?: () => void) => {
 
 export const myErrorBasic = (error: ErrorResponse) => {
   if (error.response?.data) {
-    message.error(`[${error.response.status}] ${error.response.data.message}`);
+    const { statusCode, status, message: messageRes } = error.response.data;
+    if (statusCode) {
+      message.error(`[${statusCode}] ${messageRes}`);
+      console.log("error response: ", error.response.data);
+      return;
+    }
+
+    message.error(`[${status}] ${messageRes}`);
     console.log("error response: ", error.response.data);
     return;
   }
